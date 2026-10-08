@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Weather Data Generator</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #eef5ff;
+        color: #222;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 800px;
+        margin: 40px auto;
+    }
+
+    h1 {
+        text-align: center;
+        color: #1769aa;
+    }
+
+    .search-box {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    input {
+        width: 70%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 12px 20px;
+        margin-left: 5px;
+        border: none;
+        border-radius: 6px;
+        background: #1769aa;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #0d4f82;
+    }
+
+    #result {
+        margin-top: 25px;
+    }
+
+    .weather-card {
+        background: white;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .weather-card h2 {
+        color: #1769aa;
+    }
+
+    .weather-card p {
+        font-size: 16px;
+        margin: 8px 0;
+    }
+
+    .error {
+        background: #ffe5e5;
+        color: #b00020;
+        padding: 15px;
+        border-radius: 8px;
+    }
+</style>
+
+</head><body><div class="container"><h1>🌤️ Weather Data Generator</h1>
+
+<div class="search-box">
+
+    <input
+        type="text"
+        id="city"
+        placeholder="Enter city name"
+        value="Chennai"
+    >
+
+    <button onclick="getWeather()">
+        Get Weather
+    </button>
+
+</div>
+
+<div id="result"></div>
+
+</div><script>
+// =========================================
+// OPENWEATHER API KEY
+// =========================================
+
+const API_KEY = "a5d7e98d41599d0c1527a77b194ebb1d";
+
+
+// =========================================
+// GET WEATHER DATA
+// =========================================
+
+async function getWeather() {
+
+    const city = document.getElementById("city").value;
+    const result = document.getElementById("result");
+
+    if (city.trim() === "") {
+
+        result.innerHTML =
+            "<div class='error'>Please enter a city name.</div>";
+
+        return;
+    }
+
+
+    // OpenWeather API URL
+    const API_URL =
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`;
+
+
+    result.innerHTML = "<p>Loading weather data...</p>";
+
+
+    try {
+
+        const response = await fetch(API_URL);
+
+        const data = await response.json();
+
+
+        // Check API response
+        if (!response.ok) {
+
+            result.innerHTML =
+                `<div class="error">
+                    Error: ${data.message}
+                </div>`;
+
+            return;
+        }
+
+
+        // Display city information
+
+        let output = `
+            <div class="weather-card">
+
+                <h2>
+                    📍 ${data.city.name}, ${data.city.country}
+                </h2>
+
+                <p>
+                    <strong>Timezone:</strong>
+                    ${data.city.timezone} seconds
+                </p>
+
+                <p>
+                    <strong>Forecast Records:</strong>
+                    ${data.list.length}
+                </p>
+
+            </div>
+        `;
+
+
+        // Display forecast data
+
+        data.list.slice(0, 5).forEach(function(weather) {
+
+            const date =
+                new Date(weather.dt * 1000);
+
+            output += `
+
+                <div class="weather-card">
+
+                    <h2>
+                        ${date.toLocaleString()}
+                    </h2>
+
+                    <p>
+                        🌡️ <strong>Temperature:</strong>
+                        ${weather.main.temp} °C
+                    </p>
+
+                    <p>
+                        🌡️ <strong>Feels Like:</strong>
+                        ${weather.main.feels_like} °C
+                    </p>
+
+                    <p>
+                        💧 <strong>Humidity:</strong>
+                        ${weather.main.humidity}%
+                    </p>
+
+                    <p>
+                        🌥️ <strong>Weather:</strong>
+                        ${weather.weather[0].description}
+                    </p>
+
+                    <p>
+                        💨 <strong>Wind Speed:</strong>
+                        ${weather.wind.speed} m/s
+                    </p>
+
+                    <p>
+                        🔽 <strong>Pressure:</strong>
+                        ${weather.main.pressure} hPa
+                    </p>
+
+                </div>
+
+            `;
+
+        });
+
+
+        result.innerHTML = output;
+
+    }
+
+    catch (error) {
+
+        result.innerHTML = `
+            <div class="error">
+
+                Unable to connect to the weather API.
+
+                <br><br>
+
+                Check your internet connection
+                and API key.
+
+            </div>
+        `;
+
+        console.log(error);
+
+    }
+
+}
+   
+
+</script></body>
+</html>
